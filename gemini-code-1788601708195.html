@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRM Customizable Column Pathshala Report</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    body {
+      background-color: #f4f6f9;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1150px;
+      margin: 0 auto;
+    }
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      margin-bottom: 25px;
+    }
+    h2 {
+      margin-top: 0;
+      color: #1a73e8;
+      font-size: 20px;
+      margin-bottom: 12px;
+    }
+    p {
+      color: #5f6368;
+      font-size: 14px;
+      margin-bottom: 15px;
+    }
+    textarea {
+      width: 100%;
+      height: 160px;
+      padding: 12px;
+      border: 2px solid #dadce0;
+      border-radius: 8px;
+      font-size: 13px;
+      resize: vertical;
+      outline: none;
+    }
+    textarea:focus {
+      border-color: #1a73e8;
+    }
+    .btn-group {
+      margin-top: 15px;
+      display: flex;
+      gap: 10px;
+    }
+    button {
+      background-color: #1a73e8;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #1557b0;
+    }
+    button.secondary {
+      background-color: #3c4043;
+    }
+    button.success {
+      background-color: #34a853;
+    }
+    
+    /* Column Selector Controls */
+    .column-selector {
+      background-color: #f8f9fa;
+      border: 1px solid #e0e0e0;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .column-selector h4 {
+      margin: 0 0 10px 0;
+      color: #202124;
+      font-size: 14px;
+    }
+    .checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    .checkbox-group label {
+      font-size: 13px;
+      color: #3c4043;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+    }
+    .checkbox-group input {
+      cursor: pointer;
+      accent-color: #1a73e8;
+      width: 16px;
+      height: 16px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #e0e0e0;
+      padding: 11px 13px;
+      text-align: center;
+      font-size: 13px;
+    }
+    th {
+      background-color: #f8f9fa;
+      color: #3c4043;
+      font-weight: 600;
+    }
+    tr:hover {
+      background-color: #f1f3f4;
+    }
+    .text-left {
+      text-align: left !important;
+    }
+    .owner-caller {
+      font-weight: 600;
+      color: #1a73e8;
+    }
+    .owner-actual {
+      color: #3c4043;
+      font-weight: 500;
+    }
+    .badge {
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-weight: bold;
+      font-size: 11px;
+    }
+    .badge-hot {
+      background-color: #fce8e6;
+      color: #c5221f;
+    }
+    .badge-warm {
+      background-color: #fef7e0;
+      color: #b06000;
+    }
+    .badge-proj {
+      background-color: #e6f4ea;
+      color: #137333;
+    }
+    .tag-diff {
+      background-color: #feefc3;
+      color: #b06000;
+      padding: 3px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: bold;
+    }
+    .tag-self {
+      color: #70757a;
+      font-size: 11px;
+    }
+    .total-row {
+      background-color: #e8f0fe !important;
+      font-weight: bold;
+    }
+    .empty-msg {
+      text-align: center;
+      color: #70757a;
+      padding: 20px;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  
+  <div class="card">
+    <h2>📋 CRM Data Copy-Paste</h2>
+    <p>Paste your raw CRM table data into the box below and click <strong>Generate Report</strong>:</p>
+    <textarea id="rawData" placeholder="Paste your raw CRM table here..."></textarea>
+    <div class="btn-group">
+      <button onclick="processData()">⚡ Generate Report</button>
+      <button class="secondary" onclick="clearData()">🧹 Clear</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+      <h2 style="margin: 0;">📊 Pathshala Custom Column Report</h2>
+      <button class="success" onclick="copyTableToClipboard()" id="copyBtn" style="display:none;">📋 Copy Table Data</button>
+    </div>
+
+    <!-- Column Selection Box -->
+    <div class="column-selector" id="colSelectorBox" style="display:none;">
+      <h4>📌 Select Columns to Display in Table:</h4>
+      <div class="checkbox-group">
+        <label><input type="checkbox" id="col_caller" checked onchange="updateTableVisibility()"> Action Owner (Caller)</label>
+        <label><input type="checkbox" id="col_actual" checked onchange="updateTableVisibility()"> Actual Lead Owner</label>
+        <label><input type="checkbox" id="col_type" checked onchange="updateTableVisibility()"> Allocation / Type</label>
+        <label><input type="checkbox" id="col_hot" checked onchange="updateTableVisibility()"> Hot Count</label>
+        <label><input type="checkbox" id="col_warm" checked onchange="updateTableVisibility()"> Warm Count</label>
+        <label><input type="checkbox" id="col_total" checked onchange="updateTableVisibility()"> Total Calls/Leads</label>
+        <label><input type="checkbox" id="col_proj" checked onchange="updateTableVisibility()"> Projected Date Marked</label>
+      </div>
+    </div>
+    
+    <div id="outputArea">
+      <div class="empty-msg">Please paste your data and click the "Generate Report" button.</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let globalParsedData = null;
+
+function processData() {
+  const rawText = document.getElementById('rawData').value.trim();
+  if (!rawText) {
+    alert('Please paste raw CRM data first!');
+    return;
+  }
+
+  const lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  const dateRegex = /\d{2}\/\d{2}\/\d{4}/;
+
+  const grouped = {};
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    if (line === 'Hot' || line === 'Warm') {
+      const category = line;
+      
+      let actualOwner = "N/A";
+      let actionCaller = "N/A";
+
+      if (i >= 2) {
+        actualOwner = lines[i-2];
+        actionCaller = lines[i-1];
+      } else if (i === 1) {
+        actionCaller = lines[i-1];
+        actualOwner = actionCaller;
+      }
+
+      if (actualOwner.includes('Pathshala') || actualOwner.includes('ActionsOwner')) actualOwner = actionCaller;
+      if (actionCaller.includes('Pathshala') || actionCaller.includes('ActionsOwner')) actionCaller = actualOwner;
+
+      let hasProjectedDate = false;
+      if (i + 1 < lines.length && dateRegex.test(lines[i + 1])) {
+        hasProjectedDate = true;
+      }
+
+      const groupKey = `${actionCaller}|||${actualOwner}`;
+
+      if (!grouped[groupKey]) {
+        grouped[groupKey] = {
+          caller: actionCaller,
+          actual: actualOwner,
+          hot: 0,
+          warm: 0,
+          projCount: 0
+        };
+      }
+
+      if (category === 'Hot') grouped[groupKey].hot += 1;
+      if (category === 'Warm') grouped[groupKey].warm += 1;
+      if (hasProjectedDate) grouped[groupKey].projCount += 1;
+    }
+  }
+
+  globalParsedData = grouped;
+  document.getElementById('colSelectorBox').style.display = 'block';
+  renderCustomTable();
+}
+
+function updateTableVisibility() {
+  if (globalParsedData) {
+    renderCustomTable();
+  }
+}
+
+function renderCustomTable() {
+  const keys = Object.keys(globalParsedData);
+  if (keys.length === 0) {
+    document.getElementById('outputArea').innerHTML = '<div class="empty-msg">No valid data found. Please paste standard CRM table data.</div>';
+    document.getElementById('copyBtn').style.display = 'none';
+    return;
+  }
+
+  // Active Columns Check
+  const showCaller = document.getElementById('col_caller').checked;
+  const showActual = document.getElementById('col_actual').checked;
+  const showType   = document.getElementById('col_type').checked;
+  const showHot    = document.getElementById('col_hot').checked;
+  const showWarm   = document.getElementById('col_warm').checked;
+  const showTotal  = document.getElementById('col_total').checked;
+  const showProj   = document.getElementById('col_proj').checked;
+
+  let totalHot = 0, totalWarm = 0, totalCalls = 0, totalProj = 0;
+
+  let html = `<table id="summaryTable"><thead><tr>`;
+  
+  if (showCaller) html += `<th class="text-left">Action Owner (Caller)</th>`;
+  if (showActual) html += `<th class="text-left">Actual Lead Owner</th>`;
+  if (showType)   html += `<th>Type / Allocation</th>`;
+  if (showHot)    html += `<th>Hot Count</th>`;
+  if (showWarm)   html += `<th>Warm Count</th>`;
+  if (showTotal)  html += `<th>Total Calls/Leads</th>`;
+  if (showProj)   html += `<th>Projected Date Marked</th>`;
+
+  html += `</tr></thead><tbody>`;
+
+  keys.forEach(key => {
+    const d = globalParsedData[key];
+    const totRow = d.hot + d.warm;
+
+    totalHot += d.hot;
+    totalWarm += d.warm;
+    totalCalls += totRow;
+    totalProj += d.projCount;
+
+    const isDifferent = (d.caller.toLowerCase().trim() !== d.actual.toLowerCase().trim());
+
+    html += `<tr>`;
+    if (showCaller) html += `<td class="text-left owner-caller">${d.caller}</td>`;
+    if (showActual) html += `<td class="text-left owner-actual">${d.actual}</td>`;
+    if (showType)   html += `<td>${isDifferent ? '<span class="tag-diff">🔀 Re-allocated</span>' : '<span class="tag-self">Self Lead</span>'}</td>`;
+    if (showHot)    html += `<td><span class="${d.hot > 0 ? 'badge badge-hot' : ''}">${d.hot}</span></td>`;
+    if (showWarm)   html += `<td><span class="${d.warm > 0 ? 'badge badge-warm' : ''}">${d.warm}</span></td>`;
+    if (showTotal)  html += `<td><strong>${totRow}</strong></td>`;
+    if (showProj)   html += `<td><span class="${d.projCount > 0 ? 'badge badge-proj' : ''}">${d.projCount}</span></td>`;
+    html += `</tr>`;
+  });
+
+  let labelSpan = (showCaller ? 1 : 0) + (showActual ? 1 : 0) + (showType ? 1 : 0);
+  if (labelSpan === 0) labelSpan = 1;
+
+  html += `</tbody><tfoot><tr class="total-row">`;
+  html += `<td class="text-left" colspan="${labelSpan}">TOTAL SUMMARY</td>`;
+  
+  let remainingCols = 0;
+  if (showCaller || showActual || showType) {
+    remainingCols = (showCaller ? 1 : 0) + (showActual ? 1 : 0) + (showType ? 1 : 0) - labelSpan;
+  }
+  for (let c = 0; c < remainingCols; c++) html += `<td></td>`;
+
+  if (showHot)   html += `<td>${totalHot}</td>`;
+  if (showWarm)  html += `<td>${totalWarm}</td>`;
+  if (showTotal) html += `<td>${totalCalls}</td>`;
+  if (showProj)  html += `<td>${totalProj}</td>`;
+
+  html += `</tr></tfoot></table>`;
+
+  document.getElementById('outputArea').innerHTML = html;
+  document.getElementById('copyBtn').style.display = 'inline-block';
+}
+
+function clearData() {
+  document.getElementById('rawData').value = '';
+  document.getElementById('outputArea').innerHTML = '<div class="empty-msg">Please paste your data and click the "Generate Report" button.</div>';
+  document.getElementById('colSelectorBox').style.display = 'none';
+  document.getElementById('copyBtn').style.display = 'none';
+  globalParsedData = null;
+}
+
+function copyTableToClipboard() {
+  const table = document.getElementById('summaryTable');
+  if (!table) return;
+
+  const range = document.createRange();
+  range.selectNode(table);
+  window.getSelection().removeAllRanges();
+  window.getSelection().addRange(range);
+
+  try {
+    document.execCommand('copy');
+    alert('Table copied! You can now paste it into Excel or WhatsApp.');
+  } catch (err) {
+    alert('Copy failed.');
+  }
+  window.getSelection().removeAllRanges();
+}
+</script>
+
+</body>
+</html>
